@@ -318,6 +318,9 @@ class PiNet2(tf.keras.Model):
         if out_inter>0:
             self.iout_layers = [PILayer(out_nodes+[out_inter]) for i in range(depth)]
             self.iout3_layers = [PIXLayer(out_nodes+[out_inter]) for i in range(depth)]
+            self.scale1_layer = ScaleLayer()
+            self.scale2_layer = ScaleLayer()
+            self.ip3_layer = IPLayer()
         else:
             self.iout_layers = None
 
@@ -366,7 +369,14 @@ class PiNet2(tf.keras.Model):
                         )
                 pout = self.pout_layers[i]([tensors["ind_1"], p1, p3, pout])
                 iout += self.iout_layers[i]([tensors["ind_2"], p1, basis])
-                iout3 += self.iout3_layers[i]([tensors["ind_2"], p3])
+                
+                iout3 = self.iout3_layers[i]([tensors["ind_2"], p3])
+                iout3 = self.scale1_layer([iout3, iout])
+                scaled_diff = self.scale2_layer([tensors["diff"][:, :, None], iout])
+                iout3 = iout3 + scaled_diff
+                p3 = self.ip3_layer([ind_2, p3, iout3])
+                iout3 += self.dot_layer(iout3) + iout
+                
                 tensors["p1"] = self.res_update1[i]([tensors["p1"], p1])
                 tensors["p3"] = self.res_update3[i]([tensors["p3"], p3])
 
