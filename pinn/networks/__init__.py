@@ -11,13 +11,17 @@ def get(network_spec):
     from pinn.networks.bpnn import BPNN
     from pinn.networks.lj import LJ
     from pinn.networks.pinet2 import PiNet2
+    from pinn.networks.pinet2_norm import PiNet2_norm
     from pinn.networks.pinet2_energy import PiNet2_energy
+    from pinn.networks.pinet2_energy_norm import PiNet2_energy_norm 
     implemented_networks = {
         'PiNet': PiNet,
         'BPNN': BPNN,
         'LJ': LJ,
         'PiNet2': PiNet2,
-        'PiNet2_energy': PiNet2_energy
+        'PiNet2_norm': PiNet2_norm,
+        'PiNet2_energy': PiNet2_energy,
+        'PiNet2_energy_norm': PiNet2_energy_norm
     }
     if isinstance(network_spec, tf.keras.Model):
         return network_spec
