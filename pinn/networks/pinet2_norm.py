@@ -376,7 +376,7 @@ class PiNet2_norm(tf.keras.Model):
                 
                 i3 = self.iout3_layers[i]([tensors["ind_2"], p3])
                 i3 = self.scale1_layer([i3, iout])
-                scaled_diff = self.scale2_layer([tensors["diff"]/tf.norm(tensors["diff"], axis=1, keepdims=True)[:, :, None], iout])
+                scaled_diff = self.scale2_layer([tensors["diff"][:, :, None], iout])
                 i3 = i3 + scaled_diff
                 p3 = self.ip3_layer([tensors["ind_2"], p3, i3])
                 iout3 += self.dot_layer(i3) + iout
