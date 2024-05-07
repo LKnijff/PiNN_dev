@@ -9,20 +9,32 @@ def get(model_spec, **kwargs):
     from pinn.models.potential import potential_model
     from pinn.models.dipole import dipole_model
     from pinn.models.atomic_dipole import atomic_dipole_model
+    from pinn.models.atomic_dipole_QM9 import atomic_dipole_model_QM9
     from pinn.models.dipole_neutral_QM9 import neutral_dipole_model_QM9
     from pinn.models.dipole_neutral_water import neutral_dipole_model_water
     from pinn.models.combined_dipole import combined_dipole_model
     from pinn.models.combined_dipole_neutral_QM9 import neutral_combined_dipole_model_QM9
     from pinn.models.combined_dipole_neutral_water import neutral_combined_dipole_model_water
+    from pinn.models.PaiNN_dipole import PaiNN_dipole_model
+    from pinn.models.PaiNN_dipole_QM9 import PaiNN_dipole_model_QM9
+    from pinn.models.PaiNN_dipole_neutral_QM9 import neutral_PaiNN_dipole_model_QM9
+    from pinn.models.PaiNN_dipole_water import PaiNN_dipole_model_water
+    from pinn.models.PaiNN_dipole_neutral_water import neutral_PaiNN_dipole_model_water
     implemented_models = {
         'potential_model': potential_model,
         'dipole_model': dipole_model,
         'neutral_dipole_model_QM9': neutral_dipole_model_QM9,
         'neutral_dipole_model_water': neutral_dipole_model_water,
         'atomic_dipole_model': atomic_dipole_model,
+        'atomic_dipole_model_QM9': atomic_dipole_model_QM9,
         'combined_dipole_model': combined_dipole_model,
         'neutral_combined_dipole_model_QM9': neutral_combined_dipole_model_QM9,
-        'neutral_combined_dipole_model_water': neutral_combined_dipole_model_water,}
+        'neutral_combined_dipole_model_water': neutral_combined_dipole_model_water,
+        'PaiNN_dipole_model': PaiNN_dipole_model,
+        'PaiNN_dipole_model_QM9': PaiNN_dipole_model_QM9,
+        'neutral_PaiNN_dipole_model_QM9': neutral_PaiNN_dipole_model_QM9,
+        'PaiNN_dipole_model_water': PaiNN_dipole_model_water,
+        'neutral_PaiNN_dipole_model_water': neutral_PaiNN_dipole_model_water}
 
     if isinstance(model_spec, str):
         if tf.io.gfile.exists('{}/params.yml'.format(model_spec)):
