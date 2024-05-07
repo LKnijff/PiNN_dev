@@ -368,15 +368,16 @@ class PiNet2_norm(tf.keras.Model):
             iout = 0.0
             iout3 = 0.0
             for i in range(self.depth):
+                diff_norm = tensors["diff"]/tf.norm(tensors["diff"], axis=1, keepdims=True)
                 p1, p3 = self.gc_blocks[i](
-                        [tensors["ind_2"], tensors["p1"], tensors["p3"], tensors["diff"]/tf.norm(tensors["diff"], axis=1, keepdims=True), basis]
+                        [tensors["ind_2"], tensors["p1"], tensors["p3"], diff_norm, basis]
                         )
                 pout = self.pout_layers[i]([tensors["ind_1"], p1, p3, pout])
                 iout += self.iout_layers[i]([tensors["ind_2"], p1, basis])
                 
                 i3 = self.iout3_layers[i]([tensors["ind_2"], p3])
                 i3 = self.scale1_layer([i3, iout])
-                scaled_diff = self.scale2_layer([tensors["diff"][:, :, None], iout])
+                scaled_diff = self.scale2_layer([diff_norm[:, :, None], iout])
                 i3 = i3 + scaled_diff
                 p3 = self.ip3_layer([tensors["ind_2"], p3, i3])
                 iout3 += self.dot_layer(i3) + iout
