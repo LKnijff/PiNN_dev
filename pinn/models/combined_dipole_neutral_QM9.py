@@ -73,16 +73,17 @@ def neutral_combined_dipole_model_QM9(features, labels, mode, params):
     atomic_d = tf.math.unsorted_segment_sum(atomic_d, ind1[:, 0], nbatch)
 
     dipole = q_d + atomic_d
+    dipole = tf.sqrt(tf.reduce_sum(dipole**2, axis=1)+1e-6)
 
     if mode == tf.estimator.ModeKeys.TRAIN:
-        metrics = make_metrics(features, dipole, charge_n, model_params, mode)
+        metrics = make_metrics(features, dipole, charge_n, ipred, model_params, mode)
         tvars = network.trainable_variables
         train_op = get_train_op(params['optimizer'], metrics, tvars)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           train_op=train_op)
 
     if mode == tf.estimator.ModeKeys.EVAL:
-        metrics = make_metrics(features, dipole, charge_n, model_params, mode)
+        metrics = make_metrics(features, dipole, charge_n, ipred, model_params, mode)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           eval_metric_ops=metrics.METRICS)
     else:
@@ -98,7 +99,7 @@ def neutral_combined_dipole_model_QM9(features, labels, mode, params):
 
 
 @pi_named("METRICS")
-def make_metrics(features, d_pred, q_pred, params, mode):
+def make_metrics(features, d_pred, q_pred, ipred, params, mode):
     metrics = MetricsCollector(mode)
 
     d_data = features['d_data']
@@ -109,6 +110,7 @@ def make_metrics(features, d_pred, q_pred, params, mode):
 
     metrics.add_error('D', d_data, d_pred, mask=d_mask, weight=d_weight,
                       use_error=(not params['use_d_per_atom']))
+    metrics.add_error('ipred', tf.zeros_like(ipred), ipred, log_error=False, log_hist=False, use_error=True)
 
     q_data = tf.zeros_like(q_pred)
     q_weight = params['q_loss_multiplier']

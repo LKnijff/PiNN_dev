@@ -55,7 +55,7 @@ def neutral_dipole_model_QM9(features, labels, mode, params):
     pred = tf.expand_dims(pred, axis=1)
     dipole = pred * features['coord']
     dipole = tf.math.unsorted_segment_sum(dipole, ind[:, 0], nbatch)
-    dipole = tf.sqrt(tf.reduce_sum(dipole**2, axis=1)+1e-6)
+    #dipole = tf.sqrt(tf.reduce_sum(dipole**2, axis=1)+1e-6)
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         metrics = make_metrics(features, dipole, charge_n, model_params, mode)
