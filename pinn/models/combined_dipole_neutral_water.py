@@ -61,17 +61,18 @@ def neutral_combined_dipole_model_water(features, labels, mode, params):
     
     q_tot = tf.math.unsorted_segment_sum(ppred, ind1[:, 0], nbatch)
     
-    q_d = ppred * features['coord']
-    q_d = tf.math.unsorted_segment_sum(q_d, ind1[:, 0], nbatch)
+    q_d_a = ppred * features['coord']
+    q_d = tf.math.unsorted_segment_sum(q_d_a, ind1[:, 0], nbatch)
     
     # Compute bond vector
     disp_r = features['diff']
 
     # Compute atomic dipole
     atomic_d_pairwise = ipred * disp_r
-    atomic_d = tf.math.unsorted_segment_sum(atomic_d_pairwise, ind2[:, 0], natoms) 
-    atomic_d = tf.math.unsorted_segment_sum(atomic_d, ind1[:, 0], nbatch)
+    atomic_d_a = tf.math.unsorted_segment_sum(atomic_d_pairwise, ind2[:, 0], natoms) 
+    atomic_d = tf.math.unsorted_segment_sum(atomic_d_a, ind1[:, 0], nbatch)
 
+    a_dipole = q_d_a + atomic_d_a
     dipole = q_d + atomic_d
 
     if mode == tf.estimator.ModeKeys.TRAIN:
@@ -90,8 +91,9 @@ def neutral_combined_dipole_model_water(features, labels, mode, params):
         dipole *= model_params['d_unit']
 
         predictions = {
-            'dipole': dipole,
-            'charge': q_tot
+            #'dipole': dipole,
+            #'charge': q_tot
+            'atomic_d': tf.expand_dims(a_dipole, 0)
         }
         return tf.estimator.EstimatorSpec(
             mode, predictions=predictions)

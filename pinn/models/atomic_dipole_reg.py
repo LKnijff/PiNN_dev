@@ -74,8 +74,8 @@ def atomic_dipole_model_reg(features, labels, mode, params):
         dipole *= model_params['d_unit']
 
         predictions = {
-            'ipred': ipred,
-            'dipole': dipole
+            #'dipole': dipole,
+            'atomic_d': tf.expand_dims(atomic_d, 0)
         }
         return tf.estimator.EstimatorSpec(
             mode, predictions=predictions)

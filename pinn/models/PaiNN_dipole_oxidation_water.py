@@ -55,11 +55,12 @@ def oxidation_PaiNN_dipole_model_water(features, labels, mode, params):
     q_tot = tf.math.unsorted_segment_sum(ox, ind1[:, 0], nbatch)
     
     q_d = ox * features['coord']
-    q_d = tf.math.unsorted_segment_sum(q_d, ind1[:, 0], nbatch)
+    mol_q_d = tf.math.unsorted_segment_sum(q_d, ind1[:, 0], nbatch)
     
     atomic_d = tf.math.unsorted_segment_sum(p3, ind1[:, 0], nbatch)
 
-    dipole = q_d + atomic_d
+    a_dipole = q_d + p3
+    dipole = mol_q_d + atomic_d
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         metrics = make_metrics(features, dipole, q_tot, model_params, mode)
@@ -77,8 +78,9 @@ def oxidation_PaiNN_dipole_model_water(features, labels, mode, params):
         dipole *= model_params['d_unit']
 
         predictions = {
-            'dipole': dipole,
-            'charge': q_tot
+            #'dipole': dipole,
+            #'charge': q_tot
+            'atomic_d': tf.expand_dims(a_dipole, 0)
         }
         return tf.estimator.EstimatorSpec(
             mode, predictions=predictions)
