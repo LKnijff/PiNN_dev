@@ -28,6 +28,7 @@ def get(model_spec, **kwargs):
     from pinn.models.p3_dipole_water import p3_dipole_model_water
     from pinn.models.AD_BC_dipole_water import AD_BC_dipole_model_water
     from pinn.models.AD_BC_dipole_QM9 import AD_BC_dipole_model_QM9
+    from pinn.models.BC_OS_R_dipole_water import BC_OS_R_dipole_model_water
     implemented_models = {
         'potential_model': potential_model,
         'dipole_model': dipole_model,
@@ -50,7 +51,8 @@ def get(model_spec, **kwargs):
         'p3_dipole_model_QM9': p3_dipole_model_QM9,
         'p3_dipole_model_water': p3_dipole_model_water,
         'AD_BC_dipole_model_QM9': AD_BC_dipole_model_QM9,
-        'AD_BC_dipole_model_water': AD_BC_dipole_model_water}
+        'AD_BC_dipole_model_water': AD_BC_dipole_model_water,
+        'BC_OS_R_dipole_model_water': BC_OS_R_dipole_model_water}
 
     if isinstance(model_spec, str):
         if tf.io.gfile.exists('{}/params.yml'.format(model_spec)):
