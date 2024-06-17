@@ -33,13 +33,12 @@ class PIXLayer(tf.keras.layers.Layer):
 
     """
 
-    def __init__(self, n_nodes, weighted: bool, **kwargs):
+    def __init__(self, weighted: bool, **kwargs):
         """
         Args:
             weighted (bool): style of the layer, should be a bool
         """
         super(PIXLayer, self).__init__()
-        self.n_nodes = n_nodes
         self.weighted = weighted
 
     def build(self, shapes):
@@ -50,8 +49,6 @@ class PIXLayer(tf.keras.layers.Layer):
             self.wj = tf.keras.layers.Dense(
                 shapes[1][-1], activation=None, use_bias=False
             )
-
-        self.ff_layer = FFLayer(self.n_nodes, activation=None, use_bias=False)
 
     def call(self, tensors):
         """
@@ -73,9 +70,9 @@ class PIXLayer(tf.keras.layers.Layer):
         px_j = tf.gather(px, ind_j)
 
         if self.weighted:
-            return self.ff_layer(self.wi(px_i) + self.wj(px_j))
+            return self.wi(px_i) + self.wj(px_j)
         else:
-            return self.ff_layer(px_j)
+            return px_j
 
 
 class DotLayer(tf.keras.layers.Layer):
@@ -205,7 +202,7 @@ class GCBlock(tf.keras.layers.Layer):
         self.ip1_layer = IPLayer()
 
         self.pp3_layer = FFLayer(pp_nodes, activation=None, use_bias=False)
-        self.pix_layer = PIXLayer(pp_nodes, weighted=weighted, **kwargs)
+        self.pix_layer = PIXLayer(weighted=weighted, **kwargs)
         self.ii3_layer = FFLayer(ii_nodes, **iiargs)
         self.ip3_layer = IPLayer()
 
@@ -273,12 +270,10 @@ class PiNet2(tf.keras.Model):
         ii_nodes=[16, 16],
         out_nodes=[16, 16],
         out_units=1,
-        out_prop=1,
-        out_inter=0,
         out_pool=False,
         act="tanh",
         depth=4,
-        weighted=False,
+        weighted=True,
     ):
         """
         Args:
@@ -316,20 +311,7 @@ class PiNet2(tf.keras.Model):
             GCBlock(weighted, pp_nodes, pi_nodes, ii_nodes, activation=act)
             for i in range(depth - 1)
         ]
-        self.pout_layers = [OutLayer(out_nodes, out_units) for i in range(depth)]
-
-        if out_inter>0:
-            self.iout_layers  = [PILayer(out_nodes+[out_inter]) for i in range(depth)]
-            self.iout3_layers = [PIXLayer(out_nodes+[out_inter], weighted=weighted) for i in range(depth)]
-            self.scale1_layer = ScaleLayer()
-            self.scale2_layer = ScaleLayer()
-            self.ip3_layer    = IPLayer()
-            self.dot_layer    = DotLayer(weighted=weighted)
-        else:
-            self.iout_layers = None
-
-
-        self.out_pool = out_pool
+        self.out_layers = [OutLayer(out_nodes, out_units) for i in range(depth)]
         self.ann_output = ANNOutput(out_pool)
 
     def call(self, tensors):
@@ -359,47 +341,14 @@ class PiNet2(tf.keras.Model):
         tensors["p3"] = tf.zeros([tf.shape(tensors["ind_1"])[0], 3, 1])
         fc = self.cutoff(tensors["dist"])
         basis = self.basis_fn(tensors["dist"], fc=fc)
-        
-        if self.iout_layers is not None and self.out_pool==True:
-            raise Exception("Currently this is not implemented in PiNN.")
+        output = 0.0
+        for i in range(self.depth):
+            p1, p3 = self.gc_blocks[i](
+                [tensors["ind_2"], tensors["p1"], tensors["p3"], tensors["diff"], basis]
+            )
+            output = self.out_layers[i]([tensors["ind_1"], p1, p3, output])
+            tensors["p1"] = self.res_update1[i]([tensors["p1"], p1])
+            tensors["p3"] = self.res_update3[i]([tensors["p3"], p3])
 
-        if self.iout_layers is not None:
-            pout = 0.0
-            iout = 0.0
-            iout3 = 0.0
-            for i in range(self.depth):
-                p1, p3 = self.gc_blocks[i](
-                        [tensors["ind_2"], tensors["p1"], tensors["p3"], tensors["diff"], basis]
-                        )
-                pout = self.pout_layers[i]([tensors["ind_1"], p1, p3, pout])
-                iout += self.iout_layers[i]([tensors["ind_2"], p1, basis])
-                
-                i3 = self.iout3_layers[i]([tensors["ind_2"], p3])
-                i3 = self.scale1_layer([i3, iout])
-                scaled_diff = self.scale2_layer([tensors["diff"][:, :, None], iout])
-                i3 = i3 + scaled_diff
-                p3 = self.ip3_layer([tensors["ind_2"], p3, i3])
-                iout3 += self.dot_layer(i3) + iout
-                
-                tensors["p1"] = self.res_update1[i]([tensors["p1"], p1])
-                tensors["p3"] = self.res_update3[i]([tensors["p3"], p3])
-
-            pout = self.ann_output([tensors["ind_1"], pout])
-
-            return pout, iout3
-        
-        else:
-            pout = 0.0
-            for i in range(self.depth):
-                p1, p3 = self.gc_blocks[i](
-                        [tensors["ind_2"], tensors["p1"], tensors["p3"], tensors["diff"], basis]
-                        )
-                pout = self.pout_layers[i]([tensors["ind_1"], p1, p3, pout])
-                tensors["p1"] = self.res_update1[i]([tensors["p1"], p1])
-                tensors["p3"] = self.res_update3[i]([tensors["p3"], p3])
-                
-
-            pout = self.ann_output([tensors["ind_1"], pout])
-
-            return pout
-
+        output = self.ann_output([tensors["ind_1"], output])
+        return output
