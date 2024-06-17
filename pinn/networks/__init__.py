@@ -11,9 +11,12 @@ def get(network_spec):
     from pinn.networks.bpnn import BPNN
     from pinn.networks.lj import LJ
     from pinn.networks.pinet2 import PiNet2
+    from pinn.networks.pinet2_p5_dot import PiNet2P5Dot
+    from pinn.networks.pinet2_p5_dot_i import PiNet2P5Dot_i
     from pinn.networks.pinet2_simple import PiNet2_simple
     from pinn.networks.pinet2_norm import PiNet2_norm
     from pinn.networks.pinet2_norm_simple import PiNet2_norm_simple
+    from pinn.networks.pinet2_norm_simple_nosum import PiNet2_norm_simple_nosum
     from pinn.networks.pinet2_norm_p3 import PiNet2_norm_p3
     from pinn.networks.pinet2_norm_p3_i import PiNet2_norm_p3_i
     from pinn.networks.pinet2_energy import PiNet2_energy
@@ -27,9 +30,12 @@ def get(network_spec):
         'BPNN': BPNN,
         'LJ': LJ,
         'PiNet2': PiNet2,
+        'PiNet2P5Dot': PiNet2P5Dot,
+        'PiNet2P5Dot_i': PiNet2P5Dot_i,
         'PiNet2_simple': PiNet2_simple,
         'PiNet2_norm': PiNet2_norm,
         'PiNet2_norm_simple': PiNet2_norm_simple,
+        'PiNet2_norm_simple_nosum': PiNet2_norm_simple_nosum,
         'PiNet2_norm_p3': PiNet2_norm_p3,
         'PiNet2_norm_p3_i': PiNet2_norm_p3_i,
         'PiNet2_minmax': PiNet2_minmax,
