@@ -11,6 +11,7 @@ def get(network_spec):
     from pinn.networks.bpnn import BPNN
     from pinn.networks.lj import LJ
     from pinn.networks.pinet2 import PiNet2
+    from pinn.networks.pinet2_modularized import PiNet2_module
     from pinn.networks.pinet2_p5_dot import PiNet2P5Dot
     from pinn.networks.pinet2_p5_dot_i import PiNet2P5Dot_i
     from pinn.networks.pinet2_simple import PiNet2_simple
@@ -30,6 +31,7 @@ def get(network_spec):
         'BPNN': BPNN,
         'LJ': LJ,
         'PiNet2': PiNet2,
+        'PiNet2_module': PiNet2_module,
         'PiNet2P5Dot': PiNet2P5Dot,
         'PiNet2P5Dot_i': PiNet2P5Dot_i,
         'PiNet2_simple': PiNet2_simple,
