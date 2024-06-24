@@ -11,6 +11,7 @@ def get(model_spec, **kwargs):
     from pinn.models.atomic_dipole_reg import atomic_dipole_model_reg
     from pinn.models.atomic_dipole import atomic_dipole_model
     from pinn.models.atomic_dipole_QM9 import atomic_dipole_model_QM9
+    from pinn.models.atomic_dipole_QM9_i1 import atomic_dipole_model_QM9_i1
     from pinn.models.dipole_neutral_QM9 import neutral_dipole_model_QM9
     from pinn.models.dipole_neutral_water import neutral_dipole_model_water
     from pinn.models.combined_dipole import combined_dipole_model
@@ -36,6 +37,7 @@ def get(model_spec, **kwargs):
         'neutral_dipole_model_water': neutral_dipole_model_water,
         'atomic_dipole_model': atomic_dipole_model,
         'atomic_dipole_model_QM9': atomic_dipole_model_QM9,
+        'atomic_dipole_model_QM9_i1': atomic_dipole_model_QM9_i1,
         'atomic_dipole_model_reg': atomic_dipole_model_reg,
         'combined_dipole_model': combined_dipole_model,
         'neutral_combined_dipole_model_QM9': neutral_combined_dipole_model_QM9,

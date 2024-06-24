@@ -32,7 +32,7 @@ default_params = {
 }
 
 @export_model
-def atomic_dipole_model_QM9(features, labels, mode, params):
+def atomic_dipole_model_QM9_i1(features, labels, mode, params):
     """Model function for neural network dipoles"""
     #params['network']['params'].update({'out_prop':0, 'out_inter':1})
     network = get_network(params['network'])
@@ -43,10 +43,7 @@ def atomic_dipole_model_QM9(features, labels, mode, params):
     ppred, output_dict = network(features)
     ppred = tf.expand_dims(ppred, axis=1)
     
-    i1 = output_dict['i1']
-    i3 = output_dict['i3']
-
-    ipred =  tf.einsum("ixr,ixr->ir", i3, i3) + i1 
+    ipred = output_dict['i1']
 
     ind1 = features['ind_1']  # ind_1 => id of molecule for each atom
     ind2 = features['ind_2']
