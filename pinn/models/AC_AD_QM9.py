@@ -33,7 +33,7 @@ default_params = {
 }
 
 @export_model
-def PaiNN_dipole_model(features, labels, mode, params):
+def AC_AD_dipole_model_QM9(features, labels, mode, params):
     """Model function for neural network dipoles"""
     #params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
@@ -41,7 +41,9 @@ def PaiNN_dipole_model(features, labels, mode, params):
     model_params.update(params['model']['params'])
 
     features = network.preprocess(features)
-    p1, p3 = network(features)
+    p1, output_p3 = network(features)
+    p3 = output_p3['p3']
+    p3 = tf.squeeze(p3, axis=-1)
     
     ind1 = features['ind_1']  # ind_1 => id of molecule for each atom
     ind2 = features['ind_2']
@@ -59,7 +61,7 @@ def PaiNN_dipole_model(features, labels, mode, params):
     atomic_d = tf.math.unsorted_segment_sum(p3, ind1[:, 0], nbatch)
 
     dipole = q_d + atomic_d
-    #dipole = tf.sqrt(tf.reduce_sum(dipole**2, axis=1)+1e-6)
+    dipole = tf.sqrt(tf.reduce_sum(dipole**2, axis=1)+1e-6)
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         metrics = make_metrics(features, dipole, charge_n, model_params, mode)

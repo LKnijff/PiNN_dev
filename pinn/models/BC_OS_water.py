@@ -33,7 +33,7 @@ default_params = {
 }
 
 @export_model
-def neutral_combined_dipole_model_QM9(features, labels, mode, params):
+def BC_OS_dipole_model_water(features, labels, mode, params):
     """Model function for neural network dipoles"""
     params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
@@ -49,20 +49,14 @@ def neutral_combined_dipole_model_QM9(features, labels, mode, params):
 
     natoms = tf.reduce_max(tf.shape(ind1))
     nbatch = tf.reduce_max(ind1)+1 
-
-    q_molecule = tf.math.unsorted_segment_sum(ppred, ind1[:, 0], nbatch)
-    N = tf.math.unsorted_segment_sum(tf.ones_like(ind1, tf.float32), ind1, tf.reduce_max(ind1)+1)
-
-    p_charge = q_molecule/N
-    charge_corr = tf.gather(p_charge, ind1)[:,0]
-    ppred =  ppred - charge_corr
-    charge_n = tf.math.unsorted_segment_sum(ppred, ind1[:,0], nbatch)
-
-
-    ppred = tf.expand_dims(ppred, axis=1)
-
-    q_d = ppred * features['coord']
-    q_d = tf.math.unsorted_segment_sum(q_d, ind1[:, 0], nbatch)
+    
+    ox = features['oxidation']
+    ox = tf.expand_dims(ox, axis=1)
+     
+    q_tot = tf.math.unsorted_segment_sum(ox, ind1[:, 0], nbatch)
+   
+    q_d = ox * features['coord']
+    mol_q_d = tf.math.unsorted_segment_sum(q_d, ind1[:, 0], nbatch)
     
     # Compute bond vector
     disp_r = features['diff']
@@ -70,20 +64,20 @@ def neutral_combined_dipole_model_QM9(features, labels, mode, params):
     # Compute atomic dipole
     atomic_d_pairwise = ipred * disp_r
     atomic_d = tf.math.unsorted_segment_sum(atomic_d_pairwise, ind2[:, 0], natoms) 
-    atomic_d = tf.math.unsorted_segment_sum(atomic_d, ind1[:, 0], nbatch)
+    mol_atomic_d = tf.math.unsorted_segment_sum(atomic_d, ind1[:, 0], nbatch)
 
-    dipole = q_d + atomic_d
-    dipole = tf.sqrt(tf.reduce_sum(dipole**2, axis=1)+1e-6)
+    a_dipole = q_d + atomic_d
+    dipole = mol_q_d + mol_atomic_d
 
     if mode == tf.estimator.ModeKeys.TRAIN:
-        metrics = make_metrics(features, dipole, charge_n, ipred, model_params, mode)
+        metrics = make_metrics(features, dipole, q_tot, model_params, mode)
         tvars = network.trainable_variables
         train_op = get_train_op(params['optimizer'], metrics, tvars)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           train_op=train_op)
 
     if mode == tf.estimator.ModeKeys.EVAL:
-        metrics = make_metrics(features, dipole, charge_n, ipred, model_params, mode)
+        metrics = make_metrics(features, dipole, q_tot, model_params, mode)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           eval_metric_ops=metrics.METRICS)
     else:
@@ -91,15 +85,16 @@ def neutral_combined_dipole_model_QM9(features, labels, mode, params):
         dipole *= model_params['d_unit']
 
         predictions = {
-            'dipole': dipole,
-            'charge': charge_n
+            #'dipole': dipole,
+            #'charge': q_tot
+            'atomic_d': tf.expand_dims(a_dipole, 0)
         }
         return tf.estimator.EstimatorSpec(
             mode, predictions=predictions)
 
 
 @pi_named("METRICS")
-def make_metrics(features, d_pred, q_pred, ipred, params, mode):
+def make_metrics(features, d_pred, q_pred, params, mode):
     metrics = MetricsCollector(mode)
 
     d_data = features['d_data']
@@ -110,7 +105,6 @@ def make_metrics(features, d_pred, q_pred, ipred, params, mode):
 
     metrics.add_error('D', d_data, d_pred, mask=d_mask, weight=d_weight,
                       use_error=(not params['use_d_per_atom']))
-    metrics.add_error('ipred', tf.zeros_like(ipred), ipred, log_error=False, log_hist=False, use_error=True)
 
     q_data = tf.zeros_like(q_pred)
     q_weight = params['q_loss_multiplier']

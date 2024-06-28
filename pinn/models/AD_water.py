@@ -28,20 +28,22 @@ default_params = {
     # L2 loss
     'use_l2': False,
     # Loss function multipliers
-    'd_loss_multiplier': 1.0
+    'd_loss_multiplier': 1.0,
+    'q_loss_multiplier': 1.0
 }
 
 @export_model
-def atomic_dipole_model_reg(features, labels, mode, params):
+def AD_dipole_model_water(features, labels, mode, params):
     """Model function for neural network dipoles"""
-    params['network']['params'].update({'out_prop':0, 'out_inter':1})
+    #params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
     model_params = default_params.copy()
     model_params.update(params['model']['params'])
 
     features = network.preprocess(features)
-    ppred, ipred = network(features)
-    ppred = tf.expand_dims(ppred, axis=1)
+    p1, output_p3 = network(features)
+    p3 = output_p3['p3']
+    p3 = tf.squeeze(p3, axis=-1)
     
     ind1 = features['ind_1']  # ind_1 => id of molecule for each atom
     ind2 = features['ind_2']
@@ -49,24 +51,18 @@ def atomic_dipole_model_reg(features, labels, mode, params):
     natoms = tf.reduce_max(tf.shape(ind1))
     nbatch = tf.reduce_max(ind1)+1 
 
-    # Compute bond vector
-    disp_r = features['diff']
+    atomic_d = tf.math.unsorted_segment_sum(p3, ind1[:, 0], nbatch)
 
-    # Compute atomic dipole
-    atomic_d_pairwise = ipred * disp_r
-    atomic_d = tf.math.unsorted_segment_sum(atomic_d_pairwise, ind2[:, 0], natoms) 
-    dipole = tf.math.unsorted_segment_sum(atomic_d, ind1[:, 0], nbatch)
-
-    
+    dipole = atomic_d
     if mode == tf.estimator.ModeKeys.TRAIN:
-        metrics = make_metrics(features, dipole, ipred, model_params, mode)
+        metrics = make_metrics(features, dipole, model_params, mode)
         tvars = network.trainable_variables
         train_op = get_train_op(params['optimizer'], metrics, tvars)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           train_op=train_op)
 
     if mode == tf.estimator.ModeKeys.EVAL:
-        metrics = make_metrics(features, dipole, ipred, model_params, mode)
+        metrics = make_metrics(features, dipole, model_params, mode)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           eval_metric_ops=metrics.METRICS)
     else:
@@ -75,14 +71,14 @@ def atomic_dipole_model_reg(features, labels, mode, params):
 
         predictions = {
             #'dipole': dipole,
-            'atomic_d': tf.expand_dims(atomic_d, 0)
+            'atomic_d': tf.expand_dims(p3, 0)
         }
         return tf.estimator.EstimatorSpec(
             mode, predictions=predictions)
 
 
 @pi_named("METRICS")
-def make_metrics(features, d_pred, ipred, params, mode):
+def make_metrics(features, d_pred, params, mode):
     metrics = MetricsCollector(mode)
 
     d_data = features['d_data']
@@ -93,7 +89,6 @@ def make_metrics(features, d_pred, ipred, params, mode):
 
     metrics.add_error('D', d_data, d_pred, mask=d_mask, weight=d_weight,
                       use_error=(not params['use_d_per_atom']))
-    metrics.add_error('ipred', tf.zeros_like(ipred), ipred, log_error=False, log_hist=False, use_error=True)
 
     if params['use_d_per_atom'] or params['log_d_per_atom']:
         n_atoms = count_atoms(features['ind_1'], dtype=d_data.dtype)

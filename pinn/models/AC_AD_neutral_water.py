@@ -33,7 +33,7 @@ default_params = {
 }
 
 @export_model
-def oxidation_PaiNN_dipole_model_water(features, labels, mode, params):
+def neutral_AC_AD_dipole_model_water(features, labels, mode, params):
     """Model function for neural network dipoles"""
     params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
@@ -48,13 +48,19 @@ def oxidation_PaiNN_dipole_model_water(features, labels, mode, params):
 
     natoms = tf.reduce_max(tf.shape(ind1))
     nbatch = tf.reduce_max(ind1)+1 
+
+
+    q_molecule = tf.math.reduce_sum(tf.reshape(p1,[-1,3]),axis=1)
     
-    ox = features['oxidation']
-    ox = tf.expand_dims(ox, axis=1)
+    p_charge = q_molecule/3
+    charge_corr = tf.reshape(tf.stack([p_charge, p_charge, p_charge], axis=1), [1,-1])[0,:]
     
-    q_tot = tf.math.unsorted_segment_sum(ox, ind1[:, 0], nbatch)
+    p1 =  p1 - charge_corr
+    p1 = tf.expand_dims(p1, axis=1)
     
-    q_d = ox * features['coord']
+    q_tot = tf.math.unsorted_segment_sum(p1, ind1[:, 0], nbatch)
+    
+    q_d = p1 * features['coord']
     mol_q_d = tf.math.unsorted_segment_sum(q_d, ind1[:, 0], nbatch)
     
     atomic_d = tf.math.unsorted_segment_sum(p3, ind1[:, 0], nbatch)

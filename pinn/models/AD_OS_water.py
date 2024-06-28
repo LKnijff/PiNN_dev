@@ -33,17 +33,18 @@ default_params = {
 }
 
 @export_model
-def oxidation_combined_dipole_model_water(features, labels, mode, params):
+def AD_OS_dipole_model_water(features, labels, mode, params):
     """Model function for neural network dipoles"""
-    params['network']['params'].update({'out_prop':1, 'out_inter':1})
+    #params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
     model_params = default_params.copy()
     model_params.update(params['model']['params'])
 
     features = network.preprocess(features)
-    ppred, ipred = network(features)
-    #ppred = tf.expand_dims(ppred, axis=1)
-    
+    p1, output_p3 = network(features)
+    p3 = output_p3['p3']
+    p3 = tf.squeeze(p3, axis=-1)
+
     ind1 = features['ind_1']  # ind_1 => id of molecule for each atom
     ind2 = features['ind_2']
 
@@ -52,22 +53,16 @@ def oxidation_combined_dipole_model_water(features, labels, mode, params):
     
     ox = features['oxidation']
     ox = tf.expand_dims(ox, axis=1)
-     
+    
     q_tot = tf.math.unsorted_segment_sum(ox, ind1[:, 0], nbatch)
-   
+    
     q_d = ox * features['coord']
     mol_q_d = tf.math.unsorted_segment_sum(q_d, ind1[:, 0], nbatch)
     
-    # Compute bond vector
-    disp_r = features['diff']
+    atomic_d = tf.math.unsorted_segment_sum(p3, ind1[:, 0], nbatch)
 
-    # Compute atomic dipole
-    atomic_d_pairwise = ipred * disp_r
-    atomic_d = tf.math.unsorted_segment_sum(atomic_d_pairwise, ind2[:, 0], natoms) 
-    mol_atomic_d = tf.math.unsorted_segment_sum(atomic_d, ind1[:, 0], nbatch)
-
-    a_dipole = q_d + atomic_d
-    dipole = mol_q_d + mol_atomic_d
+    a_dipole = q_d + p3
+    dipole = mol_q_d + atomic_d
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         metrics = make_metrics(features, dipole, q_tot, model_params, mode)

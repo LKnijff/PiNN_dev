@@ -33,7 +33,7 @@ default_params = {
 }
 
 @export_model
-def PaiNN_dipole_model_water(features, labels, mode, params):
+def neutral_AC_BC_R_dipole_model_water(features, labels, mode, params):
     """Model function for neural network dipoles"""
     params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
@@ -41,34 +41,49 @@ def PaiNN_dipole_model_water(features, labels, mode, params):
     model_params.update(params['model']['params'])
 
     features = network.preprocess(features)
-    p1, p3 = network(features)
+    ppred, ipred = network(features)
+    #ppred = tf.expand_dims(ppred, axis=1)
     
     ind1 = features['ind_1']  # ind_1 => id of molecule for each atom
     ind2 = features['ind_2']
 
     natoms = tf.reduce_max(tf.shape(ind1))
     nbatch = tf.reduce_max(ind1)+1 
-    
-    p1 = tf.expand_dims(p1, axis=1)
-    
-    q_tot = tf.math.unsorted_segment_sum(p1, ind1[:, 0], nbatch)
-    
-    q_d = p1 * features['coord']
-    q_d = tf.math.unsorted_segment_sum(q_d, ind1[:, 0], nbatch)
-    
-    atomic_d = tf.math.unsorted_segment_sum(p3, ind1[:, 0], nbatch)
 
+
+    q_molecule = tf.math.reduce_sum(tf.reshape(ppred,[-1,3]),axis=1)
+    
+    p_charge = q_molecule/3
+    charge_corr = tf.reshape(tf.stack([p_charge, p_charge, p_charge], axis=1), [1,-1])[0,:]
+    
+    ppred =  ppred - charge_corr
+    ppred = tf.expand_dims(ppred, axis=1)
+    
+    q_tot = tf.math.unsorted_segment_sum(ppred, ind1[:, 0], nbatch)
+    
+    q_d_a = ppred * features['coord']
+    q_d = tf.math.unsorted_segment_sum(q_d_a, ind1[:, 0], nbatch)
+    
+    # Compute bond vector
+    disp_r = features['diff']
+
+    # Compute atomic dipole
+    atomic_d_pairwise = ipred * disp_r
+    atomic_d_a = tf.math.unsorted_segment_sum(atomic_d_pairwise, ind2[:, 0], natoms) 
+    atomic_d = tf.math.unsorted_segment_sum(atomic_d_a, ind1[:, 0], nbatch)
+
+    a_dipole = q_d_a + atomic_d_a
     dipole = q_d + atomic_d
 
     if mode == tf.estimator.ModeKeys.TRAIN:
-        metrics = make_metrics(features, dipole, q_tot, model_params, mode)
+        metrics = make_metrics(features, dipole, q_tot, ipred, model_params, mode)
         tvars = network.trainable_variables
         train_op = get_train_op(params['optimizer'], metrics, tvars)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           train_op=train_op)
 
     if mode == tf.estimator.ModeKeys.EVAL:
-        metrics = make_metrics(features, dipole, q_tot, model_params, mode)
+        metrics = make_metrics(features, dipole, q_tot, ipred, model_params, mode)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           eval_metric_ops=metrics.METRICS)
     else:
@@ -76,15 +91,16 @@ def PaiNN_dipole_model_water(features, labels, mode, params):
         dipole *= model_params['d_unit']
 
         predictions = {
-            'dipole': dipole,
-            'charge': q_tot
+            #'dipole': dipole,
+            #'charge': q_tot
+            'atomic_d': tf.expand_dims(a_dipole, 0)
         }
         return tf.estimator.EstimatorSpec(
             mode, predictions=predictions)
 
 
 @pi_named("METRICS")
-def make_metrics(features, d_pred, q_pred, params, mode):
+def make_metrics(features, d_pred, q_pred, ipred, params, mode):
     metrics = MetricsCollector(mode)
 
     d_data = features['d_data']
@@ -95,6 +111,7 @@ def make_metrics(features, d_pred, q_pred, params, mode):
 
     metrics.add_error('D', d_data, d_pred, mask=d_mask, weight=d_weight,
                       use_error=(not params['use_d_per_atom']))
+    metrics.add_error('ipred', tf.zeros_like(ipred), ipred, log_error=False, log_hist=False, use_error=True)
 
     q_data = tf.zeros_like(q_pred)
     q_weight = params['q_loss_multiplier']
