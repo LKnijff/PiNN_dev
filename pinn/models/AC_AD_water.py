@@ -35,7 +35,7 @@ default_params = {
 @export_model
 def AC_AD_dipole_model_water(features, labels, mode, params):
     """Model function for neural network dipoles"""
-    params['network']['params'].update({'out_prop':1, 'out_inter':1})
+    #params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
     model_params = default_params.copy()
     model_params.update(params['model']['params'])

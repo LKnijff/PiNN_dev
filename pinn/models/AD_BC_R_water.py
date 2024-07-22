@@ -33,16 +33,23 @@ default_params = {
 }
 
 @export_model
-def AD_BC_dipole_model_QM9(features, labels, mode, params):
+def AD_BC_R_dipole_model_water(features, labels, mode, params):
     """Model function for neural network dipoles"""
-    params['network']['params'].update({'out_prop':1, 'out_inter':1})
+    #params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
     model_params = default_params.copy()
     model_params.update(params['model']['params'])
 
     features = network.preprocess(features)
-    p1, p3, ipred = network(features)
+    ppred, output_dict = network(features)
     #ppred = tf.expand_dims(ppred, axis=1)
+
+    p3 = output_dict['p3']
+    p3 = tf.squeeze(p3, axis=-1)
+    i1 = output_dict['i1']
+    i3 = output_dict['i3']
+
+    ipred = tf.einsum("ixr,ixr->ir", i3, i3) + i1
     
     ind1 = features['ind_1']  # ind_1 => id of molecule for each atom
     ind2 = features['ind_2']
@@ -63,8 +70,6 @@ def AD_BC_dipole_model_QM9(features, labels, mode, params):
     a_dipole = p3 + atomic_d_a
     dipole = p3_d + atomic_d
 
-    dipole = tf.sqrt(tf.reduce_sum(dipole**2, axis=1)+1e-6)
-    
     if mode == tf.estimator.ModeKeys.TRAIN:
         metrics = make_metrics(features, dipole, ipred, model_params, mode)
         tvars = network.trainable_variables
@@ -102,7 +107,6 @@ def make_metrics(features, d_pred, ipred, params, mode):
     metrics.add_error('D', d_data, d_pred, mask=d_mask, weight=d_weight,
                       use_error=(not params['use_d_per_atom']))
 
-    metrics.add_error('ipred', tf.zeros_like(ipred), ipred, log_error=False, log_hist=False, use_error=True)
     #q_data = tf.zeros_like(q_pred)
     #q_weight = params['q_loss_multiplier']
     #metrics.add_error('Total q', q_data, q_pred, weight=0, use_error=False)

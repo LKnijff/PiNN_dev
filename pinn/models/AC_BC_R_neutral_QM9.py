@@ -33,7 +33,7 @@ default_params = {
 }
 
 @export_model
-def neutral_AC_BC_dipole_model_QM9(features, labels, mode, params):
+def neutral_AC_BC_R_dipole_model_QM9(features, labels, mode, params):
     """Model function for neural network dipoles"""
     params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])

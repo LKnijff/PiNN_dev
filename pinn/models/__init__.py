@@ -25,11 +25,11 @@ def get(model_spec, **kwargs):
     from pinn.models.AC_AD_neutral_QM9 import neutral_AC_AD_dipole_model_QM9 
     from pinn.models.AC_AD_neutral_water import neutral_AC_AD_dipole_model_water
     from pinn.models.AC_BC import AC_BC_dipole_model
-    from pinn.models.AC_BC_neutral_QM9 import neutral_AC_BC_dipole_model_QM9
+    from pinn.models.AC_BC_R_neutral_QM9 import neutral_AC_BC_R_dipole_model_QM9
     from pinn.models.AC_BC_neutral_water import neutral_AC_BC_dipole_model_water
     from pinn.models.AC_BC_R_neutral_water import neutral_AC_BC_R_dipole_model_water
-    from pinn.models.AD_BC_QM9 import AD_BC_dipole_model_QM9
-    from pinn.models.AD_BC_water import AD_BC_dipole_model_water
+    from pinn.models.AD_BC_R_QM9 import AD_BC_R_dipole_model_QM9
+    from pinn.models.AD_BC_R_water import AD_BC_R_dipole_model_water
 
     implemented_models = {
         'potential_model': potential_model,
@@ -51,11 +51,11 @@ def get(model_spec, **kwargs):
         'neutral_AC_AD_dipole_model_QM9': neutral_AC_AD_dipole_model_QM9,
         'neutral_AC_AD_dipole_model_water': neutral_AC_AD_dipole_model_water,
         'AC_BC_dipole_model': AC_BC_dipole_model,
-        'neutral_AC_BC_dipole_model_QM9': neutral_AC_BC_dipole_model_QM9,
+        'neutral_AC_BC_R_dipole_model_QM9': neutral_AC_BC_R_dipole_model_QM9,
         'neutral_AC_BC_dipole_model_water': neutral_AC_BC_dipole_model_water,
         'neutral_AC_BC_R_dipole_model_water': neutral_AC_BC_R_dipole_model_water,
-        'AD_BC_dipole_model_QM9': AD_BC_dipole_model_QM9,
-        'AD_BC_dipole_model_water': AD_BC_dipole_model_water}
+        'AD_BC_R_dipole_model_QM9': AD_BC_R_dipole_model_QM9,
+        'AD_BC_R_dipole_model_water': AD_BC_R_dipole_model_water}
 
     if isinstance(model_spec, str):
         if tf.io.gfile.exists('{}/params.yml'.format(model_spec)):
