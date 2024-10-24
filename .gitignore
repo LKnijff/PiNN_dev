@@ -18,3 +18,5 @@ _build/
 /models/
 *.log
 *.out
+*.ipynb
+tests/*/

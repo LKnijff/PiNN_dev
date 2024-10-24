@@ -32,7 +32,7 @@ default_params = {
 }
 
 @export_model
-def neutral_AC_dipole_model_QM9(features, labels, mode, params):
+def neutral_AC_dipole_model_QM9_3d(features, labels, mode, params):
     """Model function for neural network dipoles"""
     network = get_network(params['network'])
     model_params = default_params.copy()
@@ -74,9 +74,9 @@ def neutral_AC_dipole_model_QM9(features, labels, mode, params):
         pred *= model_params['d_unit']
 
         predictions = {
-            'dipole': dipole,
-            #'charges': tf.expand_dims(pred, 0)
-            'charge': charge_n
+            #'dipole': dipole,
+            'charges': tf.expand_dims(pred, 0)
+            #'charge': charge_n
         }
         return tf.estimator.EstimatorSpec(
             mode, predictions=predictions)

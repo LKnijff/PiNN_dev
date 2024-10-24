@@ -9,6 +9,8 @@ def get(model_spec, **kwargs):
     from pinn.models.potential import potential_model
     from pinn.models.dipole import dipole_model
     from pinn.models.AC_neutral_QM9 import neutral_AC_dipole_model_QM9
+    from pinn.models.AC_neutral_QM9_3d import neutral_AC_dipole_model_QM9_3d
+    from pinn.models.AC_QM9_3d import AC_dipole_model_QM9_3d
     from pinn.models.AC_neutral_water import neutral_AC_dipole_model_water
     from pinn.models.AD_QM9 import AD_dipole_model_QM9 
     from pinn.models.AD_water import AD_dipole_model_water
@@ -35,6 +37,8 @@ def get(model_spec, **kwargs):
         'potential_model': potential_model,
         'dipole_model': dipole_model,
         'neutral_AC_dipole_model_QM9': neutral_AC_dipole_model_QM9,
+        'neutral_AC_dipole_model_QM9_3d': neutral_AC_dipole_model_QM9_3d,
+        'AC_dipole_model_QM9_3d': AC_dipole_model_QM9_3d,
         'neutral_AC_dipole_model_water': neutral_AC_dipole_model_water,
         'AD_dipole_model_QM9': AD_dipole_model_QM9,
         'AD_dipole_model_water': AD_dipole_model_water,

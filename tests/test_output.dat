@@ -1,0 +1,24 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.4, pytest-7.4.3, pluggy-1.3.0 -- /home/likn3080/miniconda3/envs/pinn_dev/bin/python
+cachedir: .pytest_cache
+rootdir: /home/likn3080/pinn_atomic_dipole_dev/PiNN_dev
+plugins: cov-4.1.0, anyio-4.0.0, forked-1.6.0
+collecting ... collected 1 item
+
+test_dipole_combined.py::test_pinn_atomic_dipole PASSED                  [100%]
+
+=============================== warnings summary ===============================
+../../../miniconda3/envs/pinn_dev/lib/python3.10/site-packages/tensorflow/python/framework/dtypes.py:205
+  /home/likn3080/miniconda3/envs/pinn_dev/lib/python3.10/site-packages/tensorflow/python/framework/dtypes.py:205: DeprecationWarning: `np.bool8` is a deprecated alias for `np.bool_`.  (Deprecated NumPy 1.24)
+    np.bool8: (False, True),
+
+../../../miniconda3/envs/pinn_dev/lib/python3.10/site-packages/flatbuffers/compat.py:19
+  /home/likn3080/miniconda3/envs/pinn_dev/lib/python3.10/site-packages/flatbuffers/compat.py:19: DeprecationWarning: the imp module is deprecated in favour of importlib and slated for removal in Python 3.12; see the module's documentation for alternative uses
+    import imp
+
+../../../miniconda3/envs/pinn_dev/lib/python3.10/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:326
+  /home/likn3080/miniconda3/envs/pinn_dev/lib/python3.10/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:326: DeprecationWarning: `np.bool8` is a deprecated alias for `np.bool_`.  (Deprecated NumPy 1.24)
+    np.bool8: (False, True),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=================== 1 passed, 3 warnings in 62.97s (0:01:02) ===================

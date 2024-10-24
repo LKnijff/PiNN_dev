@@ -157,7 +157,7 @@ class PreprocessLayer(tf.keras.layers.Layer):
         return tensors
 
 
-class PiNet2_module(tf.keras.Model):
+class PiNet2(tf.keras.Model):
     """This class implements the Keras Model for the PiNet network."""
 
     def __init__(
@@ -201,7 +201,7 @@ class PiNet2_module(tf.keras.Model):
             weighted (bool): whether to use weighted style
             rank (int[1, 3, 5]): which order of variable to use
         """
-        super(PiNet2_module, self).__init__()
+        super(PiNet2, self).__init__()
 
         self.depth = depth
         assert rank in [1, 3, 5], ValueError("rank must be 1, 3, or 5")

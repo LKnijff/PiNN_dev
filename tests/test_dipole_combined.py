@@ -14,20 +14,25 @@ def _get_dipole_data():
     q_H = abs(q_O)/2
     q = np.array([[q_O, q_H, q_H]])
 
-    coord, elems, d_data = [], [], []
+    ox_q = {1: 1.0, 8: -2.0}
+    coord, elems, d_data, ox = [], [], [], []
     for i in range(120):
         water.rotate(3, 'x')
         r = water.positions.copy()
         dipole = q @ r
 
         coord.append(r)
-        elems.append(water.numbers)
+        elems.append(list(water.numbers))
+        ox.append([ox_q[e] for e in list(water.numbers)])
         d_data.append(dipole[0])
+    
+    print(elems)
 
     data = {
             'coord': np.array(coord),
             'elems': np.array(elems),
-            'd_data': np.array(d_data)
+            'd_data': np.array(d_data),
+            'ox': np.array(ox)
             }
 
     return data
@@ -49,7 +54,7 @@ def test_pinn_atomic_dipole():
     params = {
         'model_dir': testpath,
         'network': {
-            'name': 'PiNet2',
+            'name': 'PiNet2_norm_simple',
             'params': network_params},
         'model': {
             'name': 'combined_dipole_model',
@@ -79,6 +84,6 @@ def _atomic_dipole_tests(params):
     model = pinn.get_model(params)
     results, _ = tf.estimator.train_and_evaluate(model, train_spec, eval_spec)
 
-    #assert False, results
+    assert False, results
     
 

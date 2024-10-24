@@ -74,9 +74,9 @@ def neutral_AC_dipole_model_QM9(features, labels, mode, params):
         pred *= model_params['d_unit']
 
         predictions = {
-            'dipole': dipole,
-            #'charges': tf.expand_dims(pred, 0)
-            'charge': charge_n
+            #'dipole': dipole,
+            'charges': tf.expand_dims(pred, 0)
+            #'charge': charge_n
         }
         return tf.estimator.EstimatorSpec(
             mode, predictions=predictions)

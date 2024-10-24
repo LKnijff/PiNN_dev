@@ -52,7 +52,7 @@ def test_pinn_atomic_dipole():
             'name': 'PiNet',
             'params': network_params},
         'model': {
-            'name': 'atomic_dipole_model',
+            'name': 'neutral_combined_dipole_model_QM9',
             'params':  {
                 'd_scale': 1.0,
                 'd_unit': 1.0
