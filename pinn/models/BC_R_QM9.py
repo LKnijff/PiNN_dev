@@ -43,7 +43,7 @@ def BC_R_dipole_model_QM9(features, labels, mode, params):
 
     features = network.preprocess(features)
 
-    if params['network']['name'] == "PiNet2":
+    if params['network']['name'] == "PiNet2_module":
         ppred, output_dict = network(features)
         ppred = tf.expand_dims(ppred, axis=1)
     

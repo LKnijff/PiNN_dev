@@ -35,14 +35,27 @@ default_params = {
 @export_model
 def BC_OS_dipole_model_water(features, labels, mode, params):
     """Model function for neural network dipoles"""
-    params['network']['params'].update({'out_prop':1, 'out_inter':1})
+    
+    if params['network']['name'] == "PiNet":
+        params['network']['params'].update({'out_prop':1, 'out_inter':1})
+    #params['network']['params'].update({'out_prop':1, 'out_inter':1})
     network = get_network(params['network'])
     model_params = default_params.copy()
     model_params.update(params['model']['params'])
 
     features = network.preprocess(features)
-    ppred, ipred = network(features)
-    #ppred = tf.expand_dims(ppred, axis=1)
+
+    if params['network']['name'] == "PiNet2_module":
+        ppred, output_dict = network(features)
+        ppred = tf.expand_dims(ppred, axis=1)
+
+        i1 = output_dict['i1']
+        i3 = output_dict['i3']
+
+        ipred =  tf.einsum("ixr,ixr->ir", i3, i3) + i1
+
+    else:
+        ppred, ipred = network(features)
     
     ind1 = features['ind_1']  # ind_1 => id of molecule for each atom
     ind2 = features['ind_2']
@@ -70,14 +83,14 @@ def BC_OS_dipole_model_water(features, labels, mode, params):
     dipole = mol_q_d + mol_atomic_d
 
     if mode == tf.estimator.ModeKeys.TRAIN:
-        metrics = make_metrics(features, dipole, q_tot, model_params, mode)
+        metrics = make_metrics(features, dipole, q_tot, ipred, model_params, mode)
         tvars = network.trainable_variables
         train_op = get_train_op(params['optimizer'], metrics, tvars)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           train_op=train_op)
 
     if mode == tf.estimator.ModeKeys.EVAL:
-        metrics = make_metrics(features, dipole, q_tot, model_params, mode)
+        metrics = make_metrics(features, dipole, q_tot, ipred, model_params, mode)
         return tf.estimator.EstimatorSpec(mode, loss=tf.reduce_sum(metrics.LOSS),
                                           eval_metric_ops=metrics.METRICS)
     else:
@@ -94,7 +107,7 @@ def BC_OS_dipole_model_water(features, labels, mode, params):
 
 
 @pi_named("METRICS")
-def make_metrics(features, d_pred, q_pred, params, mode):
+def make_metrics(features, d_pred, q_pred, ipred, params, mode):
     metrics = MetricsCollector(mode)
 
     d_data = features['d_data']

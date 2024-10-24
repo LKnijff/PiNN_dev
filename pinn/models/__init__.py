@@ -9,6 +9,9 @@ def get(model_spec, **kwargs):
     from pinn.models.potential import potential_model
     from pinn.models.dipole import dipole_model
     from pinn.models.AC_neutral_QM9 import neutral_AC_dipole_model_QM9
+    from pinn.models.AC_QM9 import AC_dipole_model_QM9
+    from pinn.models.AC_QM9_3d import AC_dipole_model_QM9_3d
+    from pinn.models.AC_neutral_QM9_3d import neutral_AC_dipole_model_QM9_3d
     from pinn.models.AC_neutral_water import neutral_AC_dipole_model_water
     from pinn.models.AD_QM9 import AD_dipole_model_QM9 
     from pinn.models.AD_water import AD_dipole_model_water
@@ -16,7 +19,9 @@ def get(model_spec, **kwargs):
     from pinn.models.BC import BC_dipole_model
     from pinn.models.BC_R_QM9 import BC_R_dipole_model_QM9
     from pinn.models.BC_R_QM9_i1 import BC_R_dipole_model_QM9_i1
+    from pinn.models.BC_water import BC_dipole_model_water
     from pinn.models.BC_R_water import BC_R_dipole_model_water
+    from pinn.models.BC_R_water_i1 import BC_R_dipole_model_water_i1
     from pinn.models.BC_OS_water import BC_OS_dipole_model_water
     from pinn.models.BC_OS_R_water import BC_OS_R_dipole_model_water
     from pinn.models.AC_AD import AC_AD_dipole_model
@@ -26,8 +31,10 @@ def get(model_spec, **kwargs):
     from pinn.models.AC_AD_neutral_water import neutral_AC_AD_dipole_model_water
     from pinn.models.AC_BC import AC_BC_dipole_model
     from pinn.models.AC_BC_R_neutral_QM9 import neutral_AC_BC_R_dipole_model_QM9
+    from pinn.models.AC_BC_R_neutral_QM9_i1 import neutral_AC_BC_R_dipole_model_QM9_i1
     from pinn.models.AC_BC_neutral_water import neutral_AC_BC_dipole_model_water
     from pinn.models.AC_BC_R_neutral_water import neutral_AC_BC_R_dipole_model_water
+    from pinn.models.AC_BC_R_neutral_water_i1 import neutral_AC_BC_R_dipole_model_water_i1
     from pinn.models.AD_BC_R_QM9 import AD_BC_R_dipole_model_QM9
     from pinn.models.AD_BC_R_water import AD_BC_R_dipole_model_water
 
@@ -35,6 +42,9 @@ def get(model_spec, **kwargs):
         'potential_model': potential_model,
         'dipole_model': dipole_model,
         'neutral_AC_dipole_model_QM9': neutral_AC_dipole_model_QM9,
+        'neutral_AC_dipole_model_QM9_3d': neutral_AC_dipole_model_QM9_3d,
+        'AC_dipole_model_QM9': AC_dipole_model_QM9,
+        'AC_dipole_model_QM9_3d': AC_dipole_model_QM9_3d,
         'neutral_AC_dipole_model_water': neutral_AC_dipole_model_water,
         'AD_dipole_model_QM9': AD_dipole_model_QM9,
         'AD_dipole_model_water': AD_dipole_model_water,
@@ -42,7 +52,9 @@ def get(model_spec, **kwargs):
         'BC_dipole_model': BC_dipole_model,
         'BC_R_dipole_model_QM9': BC_R_dipole_model_QM9,
         'BC_R_dipole_model_QM9_i1': BC_R_dipole_model_QM9_i1,
+        'BC_dipole_model_water': BC_dipole_model_water,
         'BC_R_dipole_model_water': BC_R_dipole_model_water,
+        'BC_R_dipole_model_water_i1': BC_R_dipole_model_water_i1,
         'BC_OS_dipole_model_water': BC_OS_dipole_model_water,
         'BC_OS_R_dipole_model_water': BC_OS_R_dipole_model_water,
         'AC_AD_dipole_model': AC_AD_dipole_model,
@@ -52,8 +64,10 @@ def get(model_spec, **kwargs):
         'neutral_AC_AD_dipole_model_water': neutral_AC_AD_dipole_model_water,
         'AC_BC_dipole_model': AC_BC_dipole_model,
         'neutral_AC_BC_R_dipole_model_QM9': neutral_AC_BC_R_dipole_model_QM9,
+        'neutral_AC_BC_R_dipole_model_QM9_i1': neutral_AC_BC_R_dipole_model_QM9_i1,
         'neutral_AC_BC_dipole_model_water': neutral_AC_BC_dipole_model_water,
         'neutral_AC_BC_R_dipole_model_water': neutral_AC_BC_R_dipole_model_water,
+        'neutral_AC_BC_R_dipole_model_water_i1': neutral_AC_BC_R_dipole_model_water_i1,
         'AD_BC_R_dipole_model_QM9': AD_BC_R_dipole_model_QM9,
         'AD_BC_R_dipole_model_water': AD_BC_R_dipole_model_water}
 

@@ -36,14 +36,20 @@ default_params = {
 def AD_dipole_model_QM9(features, labels, mode, params):
     """Model function for neural network dipoles"""
     #params['network']['params'].update({'out_prop':1, 'out_inter':1})
+
     network = get_network(params['network'])
     model_params = default_params.copy()
     model_params.update(params['model']['params'])
 
     features = network.preprocess(features)
-    p1, output_p3 = network(features)
-    p3 = output_p3['p3']
-    p3 = tf.squeeze(p3, axis=-1)
+
+    if params['network']['name'] == "PiNet2_module":
+        p1, output_p3 = network(features)
+        p3 = output_p3['p3']
+        p3 = tf.squeeze(p3, axis=-1)
+
+    else:
+        p1, p3 = network(features)
 
     ind1 = features['ind_1']  # ind_1 => id of molecule for each atom
     ind2 = features['ind_2']
